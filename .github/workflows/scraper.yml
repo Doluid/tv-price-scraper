@@ -1,0 +1,31 @@
+name: Daily TV Price Scraper
+
+on:
+  schedule:
+    # 매일 UTC 기준 자정(00:00)에 실행됩니다. (한국 시간으로는 오전 9시입니다)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 이 줄이 있으면 우리가 원할 때 버튼을 눌러 수동으로 즉시 실행해 볼 수 있습니다!
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 1. 코드 가져오기 (Checkout)
+        uses: actions/checkout@v3
+        
+      - name: 2. 파이썬 설치하기
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: 3. 필요 라이브러리 설치하기
+        run: pip install -r requirements.txt
+        
+      - name: 4. 비밀 열쇠 파일(secrets.json) 생성하기
+        env:
+          GSPREAD_CREDENTIALS: ${{ secrets.GSPREAD_CREDENTIALS }}
+        run: echo "$GSPREAD_CREDENTIALS" > secrets.json
+        
+      - name: 5. 크롤러 실행하기! 🚀
+        run: python api_scraper.py
