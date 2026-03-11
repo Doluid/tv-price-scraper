@@ -2,41 +2,41 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import gspread
-import os  # 🌟 파일 존재 여부를 확인하기 위해 추가
+import json # 🌟 JSON 처리를 위해 추가
 
 # 1. 웹페이지 기본 설정
 st.set_page_config(page_title="Samsung TV Global Dashboard", layout="wide")
 st.title("📺 삼성 글로벌 TV 가격 모니터링 대시보드")
 st.markdown("독일과 영국의 TV 모델 현황 및 **날짜별 가격 변동 추이**를 분석합니다.")
 
-# --- 🌟 클라우드 전용 보안 키 세팅 ---
-# 내 컴퓨터에는 secrets.json이 있지만, 클라우드에는 없으므로 클라우드 비밀금고에서 꺼내 임시로 만듭니다.
-if not os.path.exists('secrets.json'):
-    with open('secrets.json', 'w', encoding='utf-8') as f:
-        # st.secrets에 저장해둔 텍스트를 파일로 기록합니다.
-        f.write(st.secrets["GSPREAD_CREDENTIALS"])
-
-
-# ----------------------------------------
+# (기존에 있던 파일 생성 코드는 깔끔하게 삭제했습니다!)
 
 @st.cache_data(ttl=600)
 def load_data():
     try:
-        gc = gspread.service_account(filename='secrets.json')
+        # 🌟 클라우드 비밀금고에서 열쇠를 직접 꺼내옵니다! (파일 생성 X)
+        creds = st.secrets["GSPREAD_CREDENTIALS"]
+        
+        # TOML 문자열을 파이썬 딕셔너리로 안전하게 변환
+        if isinstance(creds, str):
+            creds_dict = json.loads(creds)
+        else:
+            creds_dict = dict(creds)
+            
+        # 파일 이름 대신 딕셔너리로 직접 구글에 로그인합니다!
+        gc = gspread.service_account_from_dict(creds_dict)
         sh = gc.open("Samsung_TV_Data")
         worksheet = sh.sheet1
-
+        
         data = worksheet.get_all_records()
         df = pd.DataFrame(data)
-
-        # 열 이름 공백 제거 보호막
-        df.columns = df.columns.str.strip()
+        
+        df.columns = df.columns.str.strip() 
         df['Price_Raw'] = pd.to_numeric(df['Price_Raw'], errors='coerce')
         return df
     except Exception as e:
         st.error(f"데이터를 불러오는 데 실패했습니다. 에러: {e}")
         return pd.DataFrame()
-
 
 df = load_data()
 
@@ -61,7 +61,7 @@ if not df.empty:
     st.subheader(f"💡 {selected_country} 요약 지표")
     latest_date = filtered_df['Date'].max()
     latest_df = filtered_df[filtered_df['Date'] == latest_date]
-
+    
     total_models = len(latest_df)
     avg_price = latest_df['Price_Raw'].mean()
     currency_symbol = "£" if selected_country == "UK" else "€"
