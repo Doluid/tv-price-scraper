@@ -38,7 +38,18 @@ def fetch_all_tvs_multi_country():
     # 수집할 국가 목록 (독일, 영국)
     target_countries = [
         {"code": "de", "name": "Germany"},
-        {"code": "uk", "name": "UK"}
+        {"code": "uk", "name": "UK"},
+        {"code": "es", "name": "Spain"},
+        {"code": "fr", "name": "France"},
+        {"code": "it", "name": "Italy"},
+        {"code": "nl", "name": "Netherlands"},
+        {"code": "ch", "name": "Switzerland"},
+        {"code": "se", "name": "Sweden"},
+        {"code": "cz", "name": "Czech"},
+        {"code": "at", "name": "Austria"},
+        {"code": "hu", "name": "Hungary"},
+        {"code": "pt", "name": "Portugal"},
+        {"code": "pl", "name": "Poland"}
     ]
 
     all_extracted_data = []
